@@ -1,0 +1,92 @@
+@startuml
+class MyMemoryAllocation {
+# String operatingMode
+# UsedList usedList
+# FreeList freeList
+# int maxMemSize
+# Iterator<Block> usedListIterator
+# Iterator<Block> freeListIterator
++ <<Create>> MyMemoryAllocation(int,String)
++ int alloc(int)
++ void free(int)
++ int size()
++ int max_size()
++ void print()
+}
+abstract class MemoryAllocation {
++ <<Create>> MemoryAllocation(int,String)
++ {abstract}int alloc(int)
++ {abstract}void free(int)
++ {abstract}int size()
++ {abstract}int max_size()
++ {abstract}void print()
+}
+class BlockList {
+# Block head
+# Block tail
+# int blockCount
+# int memSize
+# <<Create>> BlockList()
+# <<Create>> BlockList(int)
+# int insert(int,int)
+# Block insertBlock(int,int)
+# boolean delete(int)
+# Block deleteBlock(Block)
+# Block searchByOffset(int)
+# BlockList searchBySize(int)
+# int getTotalSize()
+# int[] getMaxBlock()
+# int getBlockCount()
+# int getMemSize()
+# boolean calculateAdjacency(Block,Block)
+# boolean isEmpty()
+# BlockListIterator iterator()
+# BlockListIterator iterator(boolean)
++ void print()
+}
+class BlockList.BlockListIterator {
+~ Block current
+~ boolean looping
++ <<Create>> BlockListIterator(BlockList)
++ <<Create>> BlockListIterator(BlockList,boolean)
++ boolean hasNext()
++ Block next()
+}
+class FreeList {
+# <<Create>> FreeList(int)
+- boolean merge(Block,Block)
+- boolean shrinkBy(Block,int)
+# int insert(int,int)
+# boolean delete(int)
+# boolean shrinkOrDelete(int,int)
+}
+class Block {
+- int offset
+- int size
+- Block left
+- Block right
+# <<Create>> Block(int,int)
+# <<Create>> Block(int,int,Block,Block)
+# int getSize()
+# void setSize(int)
+# int getOffset()
+# void setOffset(int)
+# int getRightBoundary()
+# Block getLeft()
+# void setLeft(Block)
+# Block getRight()
+# void setRight(Block)
+# int compareTo(Block)
++ String toString()
+}
+class UsedList {
+# <<Create>> UsedList(int)
+}
+
+
+MemoryAllocation <|-- MyMemoryAllocation
+BlockList +.. BlockList.BlockListIterator
+Iterator <|.. BlockList.BlockListIterator
+BlockList <|-- FreeList
+BlockList <|-- UsedList
+@enduml

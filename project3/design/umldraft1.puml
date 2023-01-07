@@ -1,0 +1,111 @@
+@startuml
+class framework.PartitionTable {
+~ Partition[] partitions
+}
+class framework.PartitionTable.Partition {
+}
+class framework.PartitionTable.Partition.kvPair {
+~ Object key
+~ Object value
+}
+interface java.lang.Runnable {
+}
+
+class utils.BoundedBuffer {
+- T[] buff
+- int capacity
+- int front
+- int rear
+- int count
+- Lock lock
+- Condition notFull
+- Condition notEmpty
++ void deposit(T)
++ T fetch()
+}
+class framework.MyMapReduce {
+- PartitionTable pTable
+- ConcurrentKVStore kvStore
+- MapperReducerClientAPI client
+- int numMappers
+- int numReducers
+- Lock lock
+- boolean allMappersDone
+- int numMappersDone
+- Thread[] mappers
+- Thread[] reducers
++ void MREmit(Object,Object)
+- LinkedList intermediateReduce(PartitionTable.Partition)
++ Object MRGetNext(Object,int)
+# void MRRunHelper(String,MapperReducerClientAPI,int,int)
+}
+class framework.MyMapReduce.Mapper {
++ void run()
+}
+class framework.MyMapReduce.Reducer {
+- PartitionTable.Partition partition
++ void run()
+}
+abstract class framework.MapReduce {
+# PrintWriter[] pw
+# StopWatch stopWatch
+# Logger LOGGER
+~ {abstract}void MREmit(Object,Object)
++ Object MRGetNext(Object,int)
++ int MRRun(String,MapperReducerClientAPI,int,int)
+# {abstract}void MRRunHelper(String,MapperReducerClientAPI,int,int)
++ void MRPostProcess(String,int,int)
+# void setup(int,String)
+# int teardown(int,String)
+}
+class framework.MapReduce.StopWatch {
+- long lastStartTime
+- long endTime
+- long cum
++ void pause()
++ void resume()
++ double getElapsedTime()
++ double getEndTime()
++ double getLastStartTime()
+}
+class framework.ConcurrentKVStore {
+~ int capacity
+~ int size
+~ double loadfactor
+~ Entry<K,V>[] table
++ V get(Object)
++ boolean isEmpty()
+- int index(K)
+- Entry<K,V> find(int,K)
++ V put(K,V)
+- void rehash()
++ V remove(Object)
++ int size()
+}
+class framework.ConcurrentKVStore.Entry {
+- K key
+- V val
+- Entry<K,V> next
++ K getKey()
++ V getValue()
++ V setValue(V)
++ String toString()
+}
+class framework.PartitionTable.Partition {
+~ void deposit(Object,Object)
+~ Object fetch()
+}
+
+framework.PartitionTable +.. framework.PartitionTable.Partition
+utils.BoundedBuffer <|-- framework.PartitionTable.Partition
+framework.PartitionTable.Partition +.. framework.PartitionTable.Partition.kvPair
+framework.MapReduce <|-- framework.MyMapReduce
+framework.MyMapReduce +.. framework.MyMapReduce.Mapper
+java.lang.Runnable <|.. framework.MyMapReduce.Mapper
+framework.MyMapReduce +.. framework.MyMapReduce.Reducer
+java.lang.Runnable <|.. framework.MyMapReduce.Reducer
+framework.MapReduce +.. framework.MapReduce.StopWatch
+framework.ConcurrentKVStore +.. framework.ConcurrentKVStore.Entry
+framework.MyMapReduce *–- framework.ConcurrentKVStore
+framework.MyMapReduce *–- framework.PartitionTable
+@enduml

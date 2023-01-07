@@ -1,0 +1,89 @@
+@startuml
+abstract class vm.Memory {
+# long frequency
+# PhyMemory ram
++ <<Create>> Memory(PhyMemory)
+# PhyMemory getPhyMemory()
++ {abstract}void write(int,byte)
++ {abstract}byte read(int)
+# {abstract}void sync_to_disk()
++ void startup()
++ void shutdown()
+}
+class vm.Policy {
+# int numFrames
+# int numFramesAvailable
+# int numFramesUsed
+# LinkedList<Integer> usedPFNs
+# LinkedList<Integer> availablePFNs
+# <<Create>> Policy(int)
+# int firstAvailPFN()
+# int usedPfnToEvict()
+# int useAvailFrame()
+# void useFrame(int)
+# void freeFrame(int)
+}
+class vm.VirtMemory {
+# int writeCount
+# MyPageTable pt
+# int PAGE_SIZE
+# Policy frameTracking
+# int virtMemSize
+# int physMemSize
++ <<Create>> VirtMemory()
++ <<Create>> VirtMemory(int,int)
+# int[] parseVA(int)
+# int[] parsePA(int)
+# int vaToPaAddressTranslation(int)
+# int paToVaAddressTranslation(int)
++ void write(int,byte)
++ byte read(int)
+# void sync_to_disk()
+# void loadPage(int)
+# void evictPageByPFN(int)
+# void evictPage(MyPageTable.PageTableEntry)
+# int handlePageFault(int)
+}
+class vm.MyPageTable {
+- {static} int INITIAL_SIZE
+- PageTableEntry[] vpnBuckets
+- PageTableEntry[] pfnBuckets
+- int numPTEs
++ <<Create>> MyPageTable(int)
+- int hashCode(int)
+# PageTableEntry getPTEbyPFN(int)
+# int getPFN(int)
+# int getVPN(int)
+# PageTableEntry getPTEbyVPN(int)
+# PageTableEntry addNewPTE(int,int)
+# void removePTE(PageTableEntry)
+# PageTableIterator iterator()
+~ PageTableEntry getFirst()
+}
+class vm.MyPageTable.PageTableEntry {
+~ int vpn
+~ int pfn
+~ boolean dirty
+~ PageTableEntry vpnNext
+~ PageTableEntry pfnNext
+~ <<Create>> PageTableEntry(int,int)
+}
+class vm.MyPageTable.PageTableIterator {
+~ PageTableEntry current
+~ int numSeen
+~ int numLeft
+~ int currBucket
++ <<Create>> PageTableIterator()
+~ PageTableEntry getNext()
++ boolean hasNext()
++ PageTableEntry next()
+}
+
+
+vm.Memory <|-- vm.VirtMemory
+vm.MyPageTable +.. vm.MyPageTable.PageTableEntry
+vm.MyPageTable +.. vm.MyPageTable.PageTableIterator
+vm.Iterator <|.. vm.MyPageTable.PageTableIterator
+vm.VirtMemory o-- vm.MyPageTable
+vm.VirtMemory o-- vm.Policy
+@enduml

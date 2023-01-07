@@ -1,0 +1,124 @@
+@startuml
+class utils.BoundedBuffer {
+- T[] buff
+- int capacity
+- int front
+- int rear
+- int count
+- Lock lock
+- Condition notFull
+- Condition notEmpty
+~ Logger LOGGER
++ void deposit(T)
++ T fetch()
+}
+abstract class framework.MapReduce {
+# PrintWriter[] pw
+# StopWatch stopWatch
+# Logger LOGGER
+~ {abstract}void MREmit(Object,Object)
++ Object MRGetNext(Object,int)
++ int MRRun(String,MapperReducerClientAPI,int,int)
+# {abstract}void MRRunHelper(String,MapperReducerClientAPI,int,int)
++ void MRPostProcess(String,int,int)
+# void setup(int,String)
+# int teardown(int,String)
+}
+class framework.MapReduce.StopWatch {
+- long lastStartTime
+- long endTime
+- long cum
++ void pause()
++ void resume()
++ double getElapsedTime()
++ double getEndTime()
++ double getLastStartTime()
+}
+class framework.PartitionTable {
+~ Partition[] partitions
+- int size
+~ int size()
+}
+class framework.PartitionTable.Partition {
++ void deposit(Object,Object)
++ KVPair fetch()
+}
+class framework.ConcurrentKVStore {
+~ int capacity
+~ int size
+~ double loadfactor
+~ Entry<K,V>[] table
+~ ReentrantLock[] tableLocks
+# Logger LOGGER
+~ ReentrantLock rehashLock
+~ Condition rehashDone
+~ Condition rehashCV
+~ boolean rehash
++ boolean isEmpty()
+- int index(K)
+- Entry<K,V> find(int,K)
++ V put(K,V)
+- void rehash()
++ V remove(Object)
++ int size()
+}
+class framework.ConcurrentKVStore.Entry {
+- K key
+- V val
+- Entry<K,V> next
++ K getKey()
++ V getValue()
++ V setValue(V)
++ String toString()
+}
+
+class framework.MyMapReduce {
+- PartitionTable pTable
+- ConcurrentKVStore kvStore
+- MapperReducerClientAPI client
+- int numMappers
+- int numReducers
+- Lock lock
+- boolean allMappersDone
+- int numMappersDone
+- Thread[] mappers
+- Thread[] reducers
++ void MREmit(Object,Object)
+- LinkedList intermediateReduce(PartitionTable.Partition)
++ Object MRGetNext(Object,int)
+# void MRRunHelper(String,MapperReducerClientAPI,int,int)
+}
+class framework.MyMapReduce.KVPair {
+~ Object key
+~ Object value
+}
+class framework.MyMapReduce.EOS {
+~ int key
+}
+class framework.MyMapReduce.Mapper {
+~ PartitionTable pTable
+~ String inputSource
+~ MapperReducerClientAPI client
++ void run()
+}
+class framework.MyMapReduce.Reducer {
+- PartitionTable.Partition partition
+~ int pNum
+~ MapperReducerClientAPI client
++ void run()
+}
+
+framework.MapReduce +.. framework.MapReduce.StopWatch
+framework.PartitionTable +.. framework.PartitionTable.Partition
+utils.BoundedBuffer <|-- framework.PartitionTable.Partition
+framework.ConcurrentKVStore +.. framework.ConcurrentKVStore.Entry
+framework.MapReduce <|-- framework.MyMapReduce
+framework.MyMapReduce +.. framework.MyMapReduce.EOS
+framework.MyMapReduce +.. framework.MyMapReduce.Mapper
+Thread <|-- framework.MyMapReduce.Mapper
+Thread <|-- framework.MyMapReduce.Reducer
+framework.MyMapReduce +.. framework.MyMapReduce.Reducer
+framework.MyMapReduce *–- framework.ConcurrentKVStore
+framework.MyMapReduce *–- framework.PartitionTable
+framework.MyMapReduce +.. framework.MyMapReduce.KVPair
+@enduml

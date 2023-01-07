@@ -1,0 +1,69 @@
+@startuml
+abstract class vm.Memory {
+# long frequency
+# PhyMemory ram
++ <<Create>> Memory(PhyMemory)
+# PhyMemory getPhyMemory()
++ {abstract}void write(int,byte)
++ {abstract}byte read(int)
+# {abstract}void sync_to_disk()
++ void startup()
++ void shutdown()
+}
+class vm.Policy {
+# int numFrames
+# int numFramesAvailable
+# int numFramesUsed
+# LinkedList<Integer> usedPFNs
+# LinkedList<Integer> availablePFNs
+# <<Create>> Policy(int)
+# int availPFN()
+# int pfnToEvict()
+# void useFrame(int)
+# void freeFrame(int)
+}
+class vm.VirtMemory {
+# int writeCount
+# MyPageTable vpnPT
+# MyPageTable pfnPT
+# int PAGE_SIZE
+# Policy frameTracking
+# int virtMemSize
+# int physMemSize
++ <<Create>> VirtMemory()
++ <<Create>> VirtMemory(int,int)
+# int[] parseVA(int)
+# int[] parsePA(int)
+# int vaToPaAddressTranslation(int)
+# int paToVaAddressTranslation(int)
++ void write(int,byte)
++ byte read(int)
+# void sync_to_disk()
+# void loadPage(int)
+# void evictPage(int)
+# int handlePageFault(int)
+}
+class vm.MyPageTable {
+- {static} int INITIAL_SIZE
+- PageTableEntry[] buckets
+- int numPTEs
++ <<Create>> MyPageTable(int)
+- int hashCode(int)
+# int getPFN(int)
+# PageTableEntry addNewPTE(int,int)
+# void removePTE(PageTableEntry)
+}
+class vm.MyPageTable.PageTableEntry {
+~ int vpn
+~ int pfn
+~ boolean dirty
+~ PageTableEntry next
+~ <<Create>> PageTableEntry(int,int)
+}
+
+
+vm.Memory <|-- vm.VirtMemory
+vm.MyPageTable +.. vm.MyPageTable.PageTableEntry
+vm.VirtMemory o-- vm.MyPageTable
+vm.VirtMemory o-- vm.Policy
+@enduml

@@ -1,0 +1,80 @@
+@startuml
+abstract class vm.Memory {
+# long frequency
+# PhyMemory ram
+# PhyMemory getPhyMemory()
++ {abstract}void write(int,byte)
++ {abstract}byte read(int)
+# {abstract}void sync_to_disk()
++ void startup()
++ void shutdown()
+}
+class vm.Policy {
+- int numFrames
+- int numFramesAvailable
+- int numFramesUsed
+- LinkedList<Integer> usedPFNs
+- LinkedList<Integer> availablePFNs
+# int firstAvailPFN()
+# int usedPfnToEvict()
+# int useAvailFrame()
+# void useFrame(int)
+# void freeFrame(int)
+# int numFramesAvailable()
+}
+class vm.VirtMemory {
+- int writeCount
+- MyPageTable pt
+- int PAGE_SIZE
+- Policy frameTracking
+- int virtMemSize
+- int physMemSize
+- int[] parseVA(int)
++ void write(int,byte)
++ byte read(int)
+# void sync_to_disk()
+- void evictPage(MyPageTable.PageTableEntry)
+- int handlePageFault(int)
+}
+class vm.MyPageTable {
+- {static} int tableSize
+- {static} int HASH_SIZE
+- PageTableEntry[] vpnBuckets
+- PageTableEntry[] pfnBuckets
+- int numPTEs
+- double DEFAULT_LOAD_FACTOR
+- int hashCode(int)
+# PageTableEntry getPTEbyPFN(int)
+# PageTableEntry getPTEbyVPN(int)
+- PageTableEntry addPTE(PageTableEntry,int)
+# PageTableEntry addNewPTE(int,int)
+- void rehash()
+# void removePTE(PageTableEntry)
+- void removePTE(PageTableEntry,PageTableEntry[],PageTableEntry[],int)
+# PageTableIterator iterator()
+}
+class vm.MyPageTable.PageTableEntry {
+~ int vpn
+~ int pfn
+~ boolean dirty
+~ PageTableEntry vpnNext
+~ PageTableEntry pfnNext
+}
+class vm.MyPageTable.PageTableIterator {
+~ PageTableEntry current
+~ int numSeen
+~ int numLeft
+~ int currBucket
+- PageTableEntry getNext()
++ boolean hasNext()
++ Integer next()
+}
+
+
+vm.Memory <|-- vm.VirtMemory
+vm.MyPageTable +.. vm.MyPageTable.PageTableEntry
+vm.MyPageTable +.. vm.MyPageTable.PageTableIterator
+vm.Iterator <|.. vm.MyPageTable.PageTableIterator
+vm.VirtMemory o-- vm.MyPageTable
+vm.VirtMemory o-- vm.Policy
+@enduml

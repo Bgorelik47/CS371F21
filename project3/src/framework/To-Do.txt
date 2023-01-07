@@ -1,0 +1,8 @@
+MREmit (Allison: I think this is done? Needs to be tested)
+intermediateReduce (Allison: I think this is done too.  Needs to be tested)
+MRGetNext
+MRRunHelper
+Mapper class
+Reducer class
+add locking/concurrency support to ConcurrentKVStore
+improve granularity in MyMapReduce
